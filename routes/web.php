@@ -48,7 +48,7 @@ Route::middleware(IsLogin::class)->group(function () {
     Route::delete('/checklists/{checklist}', [TodoController::class, 'destroyChecklist']);
 
     Route::get('/project/{TodoSession}', [TodoController::class, 'detail'])->name('project.detail');
-    Route::post('/project/{TodoSession}/update', [TodoController::class, 'updateSession'])->name('project.update');
+    Route::put('/project/{TodoSession}/update', [TodoController::class, 'updateSession'])->name('project.update');
     Route::delete('/project/{session}/delete', [TodoController::class, 'deleteSession'])->name('project.delete');
 
     Route::get('/parent-lists/load-more', [TodoController::class, 'loadMore']);

@@ -42,17 +42,10 @@
                 </div>
 
                 <!-- Image Upload -->
-                <div>
+                <div class="mb-6"> <!-- Tambahkan margin bottom di sini -->
                     <label class="block text-sm font-medium text-gray-700">Choose Image</label>
-                    <div
-                        class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                         <div class="space-y-1 text-center">
-                            {{-- <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none"
-                                viewBox="0 0 48 48" aria-hidden="true">
-                                <path
-                                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.536-3.536A4 4 0 0024 8H12a4 4 0 00-4 4v20"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                            </svg> --}}
                             <div class="flex text-sm text-gray-600">
                                 <label for="img"
                                     class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
@@ -70,7 +63,7 @@
                         <img id="current-image" src="" class="mt-2 mx-auto max-h-32 hidden">
                     </div>
                 </div>
-            </form>
+            </form> <!-- Pindahkan penutup form di sini -->
         </div>
 
         <!-- Modal Footer -->
@@ -83,7 +76,7 @@
             </button>
 
             <!-- Tombol Update -->
-            <button type="submit"
+            <button type="submit" form="updateTodoForm"
                 class="px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-500 cursor-pointer transition-colors">
                 Update
             </button>
@@ -146,13 +139,17 @@
         });
 
         // Event untuk submit form update
-        $('#updateTodoForm').submit(function(e) {
+        $('#updateTodoForm').on('submit', function(e) {
             e.preventDefault();
 
-            let sessionId = $('#TodoSession_id').val(); // Ambil session_id dari input hidden
+            let sessionId = $('#TodoSession_id').val();
             let formData = new FormData(this);
 
-            // AJAX update
+            // Debug: Lihat isi FormData sebelum dikirim
+            for (var pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+
             $.ajax({
                 url: `/project/${sessionId}/update`,
                 type: "POST",
@@ -160,23 +157,22 @@
                 processData: false,
                 contentType: false,
                 headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    'X-HTTP-Method-Override': 'PUT' // Untuk method override
                 },
                 success: function(response) {
+                    console.log("Update success:", response);
                     Swal.fire({
                         icon: 'success',
                         title: response.message,
                         showConfirmButton: false,
                         timer: 3000
                     });
-
-                    // Tutup modal setelah sukses
                     $('#modalDetailTodo').addClass('hidden');
-
-                    // Update data di halaman tanpa reload
                     updateTodoCard(response.data);
                 },
                 error: function(xhr) {
+                    console.error("Update error:", xhr);
                     let errorMessage = xhr.responseJSON?.message ||
                         'Terjadi kesalahan saat mengupdate data';
                     Swal.fire({

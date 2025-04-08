@@ -27,9 +27,9 @@
                                     d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
                             </svg>
                         </div>
-                        <input type="search" id="default-search"
+                        <input type="search" id="project-search"
                             class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            placeholder="search projects.." required />
+                            placeholder="Search projects..." />
                     </div>
                 </form>
             </div>
@@ -43,9 +43,9 @@
                         class="block w-60 bg-gray-900 text-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition">
                         <a href="{{ route('projects.show', $session->id) }}" class="block">
                             <div class="h-40 overflow-hidden">
-                                 @if (!empty($session->img) && file_exists(public_path($session->img)))
-                                    <img src="{{ asset($session->img) }}"
-                                        class="w-full h-full object-cover" alt="Card Image">
+                                @if (!empty($session->img) && file_exists(public_path($session->img)))
+                                    <img src="{{ asset($session->img) }}" class="w-full h-full object-cover"
+                                        alt="Card Image">
                                 @endif
                                 {{-- <img src="{{ asset($session->img) }}" alt="Session Image"
                                     class="w-full h-full object-cover"> --}}
@@ -55,10 +55,11 @@
                             <div class="text-lg">
                                 {{ $session->title }}
                             </div>
-                            <button class="rounded-full border-2 border-transparent flex items-center justify-center w-7 h-7 hover:bg-orange-200 hover:border-orange-400 transition duration-200 cursor-pointer"
-                            data-id="{{ $session->id }}" id="btn-detail-todo">
-                            <i class="fas fa-info fa-sm"></i>
-                        </button>
+                            <button
+                                class="rounded-full border-2 border-transparent flex items-center justify-center w-7 h-7 hover:bg-orange-200 hover:border-orange-400 transition duration-200 cursor-pointer"
+                                data-id="{{ $session->id }}" id="btn-detail-todo">
+                                <i class="fas fa-info fa-sm"></i>
+                            </button>
                         </div>
                     </div>
                 @endforeach
@@ -68,6 +69,29 @@
         </div>
 
     </div>
+
 @endsection
 
 @include('components.modalDetailProject')
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        // Project search functionality
+        $('#project-search').on('input', function() {
+            const searchTerm = $(this).val().toLowerCase();
+            
+            $('.block.w-60').each(function() {
+                const projectTitle = $(this).find('.text-lg').text().toLowerCase();
+                const projectMatches = projectTitle.includes(searchTerm);
+                
+                if (searchTerm === '' || projectMatches) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+    });
+</script>
+@endpush
