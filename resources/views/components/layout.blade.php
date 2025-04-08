@@ -1,51 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title')</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
-    @vite('resources/css/app.css')    
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    @stack('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script defer src="{{ asset('js/sidebar.js') }}"></script> <!-- Tambahkan script JS -->
-    <style>
-        .transition-all {
-            transition: all 0.3s;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@yield('title')</title>
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
+@vite('resources/css/app.css')
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+@stack('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script defer src="{{ asset('js/sidebar.js') }}"></script> <!-- Tambahkan script JS -->
+<style>
+    .transition-all {
+        transition: all 0.3s;
+    }
 
-        .duration-300 {
-            transition-duration: 300ms;
-        }
+    .duration-300 {
+        transition-duration: 300ms;
+    }
 
-        .scale-0 {
-            transform: scale(0);
-        }
+    .scale-0 {
+        transform: scale(0);
+    }
 
-        .rotate-[360deg] {
-            transform: rotate(360deg);
-        }
+    .rotate-[360deg] {
+        transform: rotate(360deg);
+    }
 
-        .fa-flip-horizontal {
-            transform: scaleX(-1);
-        }
-    </style>
-    <style>
-        body {
-            font-family: 'League Spartan', sans-serif;
-            background: #F8F9FA;
-        }
-    </style>
+    .fa-flip-horizontal {
+        transform: scaleX(-1);
+    }
+</style>
+<style>
+    body {
+        font-family: 'League Spartan', sans-serif;
+        background: #F8F9FA;
+    }
+</style>
 </head>
 
 <body>
     <div class="flex">
         <!-- Sidebar -->
         <div
-            class="sidebar bg-orange-400 h-screen p-5 pt-8 relative transition-all duration-300 shadow-lg overflow-visible w-60">
+            class="sidebar bg-orange-400 min-h-screen p-5 pt-8 relative transition-all duration-300 shadow-lg overflow-visible w-60">
             <i
                 class="arrow-icon fas fa-arrow-left text-orange-400 bg-white p-3 rounded-full w-10 h-10 flex items-center justify-center absolute -right-5 top-9 border border-orange-400 cursor-pointer"></i>
 
@@ -61,10 +61,13 @@
 
             <ul class="mt-5 duration-400 navlink ml-5">
                 <!-- Dashboard -->
-                <li class=" flex items-center p-3 cursor-pointer hover:bg-orange-500 rounded-lg transition">
-                    <i class="fas fa-home text-white w-6 text-lg"></i>
-                    <span class="sidebar-text text-white duration-300 ml-3 text-lg">Dashboard</span>
-                </li>
+                <a href="{{ route('dashboard') }}">
+                    <li class=" flex items-center p-3 cursor-pointer hover:bg-orange-500 rounded-lg transition">
+                        <i class="fas fa-home text-white w-6 text-lg"></i>
+                        <span class="sidebar-text text-white duration-300 ml-3 text-lg">Dashboard</span>
+                    </li>
+                </a>
+              
                 <!-- Create -->
                 <li class="flex items-center p-3 cursor-pointer hover:bg-orange-500 rounded-lg transition"
                     id="openModalCreate">

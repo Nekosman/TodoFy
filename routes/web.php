@@ -27,17 +27,21 @@ Route::get('reset-password/{token}', [ForgotPasswordController::class, 'showRese
 Route::post('reset-password', [ForgotPasswordController::class, 'submitResetPasswordForm'])->name('reset.password.post');
 
 Route::middleware(IsLogin::class)->group(function () {
-    Route::get('/dashboard', [TodoController::class, 'index']);
+    Route::get('/dashboard', [TodoController::class, 'index'])->name('dashboard');
     Route::get('/session/{id}', [TodoController::class, 'show'])->name('projects.show');
 
     Route::post('/todo-sessions', [TodoController::class, 'storeSession'])->name('storeSession');
     Route::delete('/todo-sessions/{todoSession}', [TodoController::class, 'destroySession']);
 
-    Route::post('/parent-lists/{sessionId}', [TodoController::class, 'storeParentList']);
-    Route::delete('/parent-lists/{parentList}', [TodoController::class, 'destroyParentList']);
+    Route::post('/parent-lists', [TodoController::class, 'storeParent'])->name('parent-lists.store');
+    Route::get('/parent-lists/detail/{ParentList}', [TodoController::class, 'detailParent'])->name('parent-lists.detail');
+    Route::put('/parent-lists/update/{ParentList}', [TodoController::class, 'updateParent'])->name('parent-lists.update');
+    Route::delete('/parent-lists/delete/{ParentList}', [TodoController::class, 'deleteParent'])->name('parent-lists.delete');
 
-    Route::post('/cards/{parentId}', [TodoController::class, 'storeCard']);
-    Route::delete('/cards/{card}', [TodoController::class, 'destroyCard']);
+    Route::post('/cards/create', [TodoController::class, 'storeCard'])->name('cards.store');
+    Route::get('/cards/{card}', [TodoController::class, 'showCard'])->name('cards.show');
+    Route::put('/cards/update/{card}', [TodoController::class, 'updateCard'])->name('cards.update');
+    Route::delete('/cards/delete/{card}', [TodoController::class, 'deleteCard'])->name('cards.delete');
 
     Route::post('/checklists/{cardId}', [TodoController::class, 'storeChecklist']);
     Route::patch('/checklists/{checklist}', [TodoController::class, 'updateChecklist']);
@@ -45,4 +49,7 @@ Route::middleware(IsLogin::class)->group(function () {
 
     Route::get('/project/{TodoSession}', [TodoController::class, 'detail'])->name('project.detail');
     Route::post('/project/{TodoSession}/update', [TodoController::class, 'updateSession'])->name('project.update');
+    Route::delete('/project/{session}/delete', [TodoController::class, 'deleteSession'])->name('project.delete');
+
+    Route::get('/parent-lists/load-more', [TodoController::class, 'loadMore']);
 });

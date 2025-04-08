@@ -47,12 +47,12 @@
                     <div
                         class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
                         <div class="space-y-1 text-center">
-                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none"
+                            {{-- <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none"
                                 viewBox="0 0 48 48" aria-hidden="true">
                                 <path
                                     d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.536-3.536A4 4 0 0024 8H12a4 4 0 00-4 4v20"
                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-                            </svg>
+                            </svg> --}}
                             <div class="flex text-sm text-gray-600">
                                 <label for="img"
                                     class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
@@ -74,13 +74,29 @@
         </div>
 
         <!-- Modal Footer -->
-        <div class="p-4 border-t flex justify-end">
-            <button type="submit" class="px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-500 cursor-pointer">
+        <div class="flex justify-end items-center gap-4 p-4 border-t">
+            <!-- Tombol Delete -->
+            <button class="btn-delete-session flex items-center justify-center p-2 text-red-500 hover:text-red-700 transition-colors" 
+                    data-id="{{ $session->id }}"
+                    title="Delete Session">
+                <i class="fas fa-trash"></i>
+            </button>
+            
+            <!-- Tombol Update -->
+            <button type="submit" 
+                    class="px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-500 cursor-pointer transition-colors">
                 Update
             </button>
         </div>
     </div>
 </div>
+
+{{-- <style>
+    #modalDetailTodo {
+        display: none !important;
+    }
+</style> --}}
+
 
 @push('scripts')
     <script>
@@ -191,6 +207,48 @@
         $('#img').change(function() {
             const fileName = $(this).val().split('\\').pop();
             $('#file-name').text(fileName || 'No file chosen');
+        });
+
+        // Event untuk delete session
+        $('body').on('click', '.btn-delete-session', function() {
+            let sessionId = $(this).data('id');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: `/project/${sessionId}/delete`,
+                        type: "DELETE",
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            Swal.fire(
+                                'Deleted!',
+                                response.message,
+                                'success'
+                            ).then(() => {
+                                // Refresh halaman atau update UI
+                                window.location.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                            Swal.fire(
+                                'Error!',
+                                xhr.responseJSON?.message || 'Failed to delete session',
+                                'error'
+                            );
+                        }
+                    });
+                }
+            });
         });
     </script>
 @endpush

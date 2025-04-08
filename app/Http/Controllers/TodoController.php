@@ -22,10 +22,7 @@ class TodoController extends Controller
         return view('pages.dashboard', compact('sessions'));
     }
 
-    /**
-     * Membuat session baru dan parent list default
-     */
-
+    //session function
     public function storeSession(Request $request)
     {
         $request->validate([
@@ -88,6 +85,7 @@ class TodoController extends Controller
             ],
         ]);
     }
+
     public function updateSession(Request $request, $id)
     {
         $request->validate([
@@ -129,26 +127,227 @@ class TodoController extends Controller
             ]);
         });
     }
-    /**
-     * Menghapus session dan semua isinya
-     */
+
     public function deleteSession($id)
     {
-        TodoSession::where('id', $id)
-            ->where('user_id', auth()->id())
-            ->delete();
-        return response()->json(['message' => 'Session deleted successfully']);
+        DB::transaction(function () use ($id) {
+            // Dapatkan session yang akan dihapus
+            $session = TodoSession::where('id', $id)
+                ->where('user_id', auth()->id())
+                ->firstOrFail();
+
+            // Hapus semua data terkait
+            $session->parentLists()->each(function ($parentList) {
+                // Hapus cards di setiap parent list
+                $parentList->cards()->each(function ($card) {
+                    // Hapus checklist di setiap card
+                    $card->checklists()->delete();
+                    // Hapus card
+                    $card->delete();
+                });
+                // Hapus parent list
+                $parentList->delete();
+            });
+
+            // Hapus session itu sendiri
+            $session->delete();
+        });
+
+        return response()->json(['message' => 'Session and all related data deleted successfully']);
     }
 
-    /**
-     * Menambahkan card ke parent list
-     */
+    //parent function
+    public function storeParent(Request $request)
+    {
+        $request->validate([
+            'session_id' => 'required|exists:todo_sessions,id', // Perbaikan nama tabel
+        ]);
+
+        $defaultTitle = 'New List'; // Judul default yang lebih deskriptif
+
+        $parentList = ParentList::create([
+            'session_id' => $request->session_id, // Gunakan session_id bukan id
+            'title' => $defaultTitle,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Parent list created successfully',
+            'data' => $parentList, // Kembalikan data yang baru dibuat
+        ]);
+    }
+
+    public function detailParent(ParentList $ParentList)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Detail Data Project',
+            'data' => [
+                'id' => $ParentList->id,
+                'title' => $ParentList->title,
+            ],
+        ]);
+    }
+
+    public function updateParent(Request $request, $id)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+        ]);
+
+        $parentList = ParentList::findOrFail($id);
+
+        if ($parentList->title === $request->title) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'No changes detected.',
+                ],
+                400,
+            );
+        }
+
+        $parentList->update($request->only('title'));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Parent list updated successfully.',
+            'data' => $parentList,
+        ]);
+    }
+
+    public function deleteParent($id)
+    {
+        try {
+            // Dapatkan semua session_id yang dimiliki user
+            $userSessionIds = TodoSession::where('user_id', auth()->id())
+                ->pluck('id')
+                ->toArray();
+
+            // Cari parent list yang dimiliki user
+            $parentList = ParentList::where('id', $id)->whereIn('session_id', $userSessionIds)->first();
+
+            if (!$parentList) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Parent list not found or you dont have permission to delete it',
+                    ],
+                    404,
+                );
+            }
+
+            // Hapus parent list (cards akan terhapus otomatis karena onDelete cascade)
+            $parentList->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Parent list and all related cards deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error deleting parent list: ' . $e->getMessage(),
+                ],
+                500,
+            );
+        }
+    }
+
+    //card function
     public function storeCard(Request $request)
     {
-        $request->validate(['parent_list_id' => 'required|exists:parent_lists,id', 'title' => 'required|string']);
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'due_date' => 'nullable|date',
+                'img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+                'parent_id' => 'required|exists:parent_lists,id',
+            ]);
 
-        $card = Card::create(['parent_list_id' => $request->parent_list_id, 'title' => $request->title]);
-        return response()->json($card);
+            return DB::transaction(function () use ($request, $validated) {
+                // Tambahkan $validated di sini
+                if ($request->hasFile('img')) {
+                    $imageName = time() . '.' . $request->img->extension();
+                    $request->img->move(public_path('storage/images/cards'), $imageName);
+                    $validated['img'] = $imageName; // Tambahkan nama gambar ke data yang divalidasi
+                }
+
+                $card = Card::create($validated);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Card created successfully',
+                    'card' => $card,
+                ]);
+            });
+        } catch (\Exception $e) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Failed to create card: ' . $e->getMessage(),
+                ],
+                500,
+            );
+        }
+    }
+
+    public function showCard(Card $card)
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Detail Data Project',
+            'data' => [
+                'id' => $card->id,
+                'title' => $card->title,
+                'description' => $card->description,
+                'due_date' => $card->due_date,
+                'is_due_checked' => $card->is_due_checked,
+                'img' => $card->img,
+            ],
+        ]);
+    }
+
+    public function updateCard(Request $request, $id)
+    {
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'due_date' => 'nullable|date',
+                'is_due_checked' => 'boolean',
+                'img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+            ]);
+
+            return DB::transaction(function () use ($request, $validated, $id) {
+                $card = Card::findOrFail($id);
+
+                // Tambahkan $validated di sini
+                if ($request->hasFile('img')) {
+                    $imageName = time() . '.' . $request->img->extension();
+                    $request->img->move(public_path('storage/images/cards'), $imageName);
+                    $validated['img'] = $imageName; // Tambahkan nama gambar ke data yang divalidasi
+                }
+
+                $card->update($validated);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Card created successfully',
+                    'card' => $card->fresh(),
+                ]);
+            });
+        } catch (\Exception $e) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Failed to create card: ' . $e->getMessage(),
+                ],
+                500,
+            );
+        }
     }
 
     /**
@@ -156,39 +355,41 @@ class TodoController extends Controller
      */
     public function deleteCard($id)
     {
-        Card::destroy($id);
-        return response()->json(['message' => 'Card deleted successfully']);
-    }
+        try {
+            $card = Card::find($id);
 
-    /**
-     * Menambahkan checklist ke card
-     */
-    public function storeChecklist(Request $request)
-    {
-        $request->validate(['card_id' => 'required|exists:cards,id', 'title' => 'required|string']);
+            if (!$card) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'card not found',
+                    ],
+                    404,
+                );
+            }
 
-        $checklist = Checklist::create(['card_id' => $request->card_id, 'title' => $request->title, 'completed' => false]);
-        return response()->json($checklist);
-    }
+            if ($card->img) {
+                $imagePath = public_path('storage/images/cards/' . $card->img);
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
 
-    /**
-     * Mengubah status checklist (selesai/tidak)
-     */
-    public function toggleChecklist($id)
-    {
-        $checklist = Checklist::findOrFail($id);
-        $checklist->completed = !$checklist->completed;
-        $checklist->save();
+            // Hapus parent list (cards akan terhapus otomatis karena onDelete cascade)
+            $card->delete();
 
-        return response()->json($checklist);
-    }
-
-    /**
-     * Menghapus checklist
-     */
-    public function deleteChecklist($id)
-    {
-        Checklist::destroy($id);
-        return response()->json(['message' => 'Checklist deleted successfully']);
+            return response()->json([
+                'success' => true,
+                'message' => 'card deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error deleting parent list: ' . $e->getMessage(),
+                ],
+                500,
+            );
+        }
     }
 }
