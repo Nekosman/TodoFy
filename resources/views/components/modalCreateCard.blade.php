@@ -107,12 +107,39 @@
                             timer: 1500
                         });
 
-                        // Tambahkan card baru ke parent list
-                        addNewCardToParentList(response.card);
+                        // Langsung buat HTML card baru
+                        const card = response.card;
+                        const parentList = $(`.parent-list-item[data-parent-id="${card.parent_id}"]`);
 
-                        // Reset form dan tutup modal
+                        if (parentList.length) {
+                            const cardHtml = `
+                            <div class="bg-gray-700 p-3 rounded-md mb-2 card-item">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="font-medium">${card.title}</h3>
+                                        ${statusBadgeHtml(card.is_due_checked)}
+                                    </div>
+                                    <button class="text-gray-400 hover:text-white btn-detail-card" 
+                                            data-id="${card.id}">
+                                        <i class="fas fa-info-circle"></i>
+                                    </button>
+                                </div>
+                                ${card.description ? `<p class="text-sm text-gray-300 mt-1">${card.description}</p>` : ''}
+                                <div class="flex justify-between items-center mt-1">
+                                    <p class="text-xs text-gray-400">Due: ${card.due_date || ''}</p>
+                                    <p class="text-xs ${card.is_due_checked ? 'text-green-300' : 'text-yellow-300'}">
+                                        ${card.is_due_checked ? 'Completed' : 'Pending'}
+                                    </p>
+                                </div>
+                                ${card.img ? `<img src="/storage/images/cards/${card.img}" class="mt-2 rounded-md max-h-20">` : ''}
+                            </div>
+                        `;
+
+                            parentList.find('.space-y-3').prepend(cardHtml);
+                        }
+
+                        // Reset form
                         $('#createCardForm')[0].reset();
-                        $('#card-file-name').text('');
                         $('#modalCreateCard').addClass('hidden');
                     }
                 },
@@ -127,28 +154,11 @@
             });
         });
 
-        // Fungsi untuk menambahkan card baru ke parent list
-        function addNewCardToParentList(card) {
-            const parentList = $(`.parent-list-item[data-parent-id="${card.parent_id}"]`);
 
-            if (parentList.length) {
-                const cardHtml = `
-            <div class="bg-gray-700 p-3 rounded-md mb-2 card-item" data-card-id="${card.id}">
-                <div class="flex justify-between items-start">
-                    <h3 class="font-medium">${card.title}</h3>
-                    <button class="text-gray-400 hover:text-white card-detail-btn" data-id="${card.id}">
-                        <i class="fas fa-info-circle"></i>
-                    </button>
-                </div>
-                ${card.description ? `<p class="text-sm text-gray-300 mt-1">${card.description}</p>` : ''}
-                ${card.due_date ? `<p class="text-xs text-gray-400 mt-1">Due: ${card.due_date}</p>` : ''}
-                ${card.img ? `<img src="/storage/images/cards/${card.img}" class="mt-2 rounded-md max-h-20">` : ''}
-            </div>
-        `;
-
-                // Tambahkan card ke dalam parent list
-                parentList.append(cardHtml);
-            }
+        function statusBadgeHtml(isChecked) {
+            const bgClass = isChecked ? 'bg-green-500' : 'bg-yellow-500';
+            const text = isChecked ? 'Done' : 'Due';
+            return `<span class="px-2 py-1 rounded-full text-xs font-medium ${bgClass} text-white">${text}</span>`;
         }
 
         // Menampilkan nama file yang dipilih untuk card

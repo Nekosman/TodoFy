@@ -32,8 +32,8 @@
                                         <h3 class="font-medium">{{ $card->title }}</h3>
                                         {!! status_badge($card->is_due_checked, 'bg-green-500 text-white', 'bg-yellow-500 text-white') !!}
                                     </div>
-                                    <button class="text-gray-400 hover:text-white" data-id="{{ $card->id }}"
-                                        id="btn-detail-card">
+                                    <button class="text-gray-400 hover:text-white btn-detail-card"
+                                        data-id="{{ $card->id }}">
                                         <i class="fas fa-info-circle"></i>
                                     </button>
                                 </div>

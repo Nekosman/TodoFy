@@ -76,15 +76,15 @@
         <!-- Modal Footer -->
         <div class="flex justify-end items-center gap-4 p-4 border-t">
             <!-- Tombol Delete -->
-            <button class="btn-delete-session flex items-center justify-center p-2 text-red-500 hover:text-red-700 transition-colors" 
-                    data-id="{{ $session->id }}"
-                    title="Delete Session">
+            <button
+                class="btn-delete-session flex items-center justify-center p-2 text-red-500 hover:text-red-700 transition-colors"
+                data-id="" title="Delete Session">
                 <i class="fas fa-trash"></i>
             </button>
-            
+
             <!-- Tombol Update -->
-            <button type="submit" 
-                    class="px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-500 cursor-pointer transition-colors">
+            <button type="submit"
+                class="px-4 py-2 bg-orange-400 text-white rounded-md hover:bg-orange-500 cursor-pointer transition-colors">
                 Update
             </button>
         </div>
@@ -102,6 +102,9 @@
     <script>
         // Event untuk membuka modal detail
         $('body').on('click', '#btn-detail-todo', function() {
+            const sessionId = $(this).data('id');
+            $('.btn-delete-session').data('id', sessionId);
+
             let TodoSession_id = $(this).data('id');
             $.ajax({
                 url: `/project/${TodoSession_id}`,

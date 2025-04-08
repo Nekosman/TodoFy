@@ -82,64 +82,37 @@
 
 @push('scripts')
     <script>
-        // Event untuk membuka modal detail card
-        $(document).on('click', '#btn-detail-card', function() {
+        // Event untuk membuka modal detail card (gunakan event delegation)
+        $(document).on('click', '.btn-detail-card', function() {
             let cardId = $(this).data('id');
-            console.log("Klik Detail Card, ID:", cardId);
+            console.log("Detail card clicked:", cardId);
 
             $.ajax({
                 url: `/cards/${cardId}`,
                 type: "GET",
-                cache: false,
                 success: function(response) {
-                    console.log("Full response:", response);
-
-                    if (!response || !response.data) {
-                        console.error("Data tidak ditemukan dalam response:", response);
-                        return;
-                    }
-
-                    // Isi form dengan data dari response
+                    // Isi form dengan data response
                     $('#card_id').val(response.data.id);
-                    $('#card_title').val(response.data.title || '');
-                    $('#card_description').val(response.data.description || '');
+                    $('#card_title').val(response.data.title);
+                    $('#card_description').val(response.data.description);
 
-                    // Format due date
                     if (response.data.due_date) {
-                        // Convert MySQL datetime to local datetime format
                         const dueDate = new Date(response.data.due_date);
-                        // Adjust for timezone offset
-                        const timezoneOffset = dueDate.getTimezoneOffset() * 60000;
-                        const localDate = new Date(dueDate.getTime() - timezoneOffset);
-                        const formattedDate = localDate.toISOString().slice(0, 16);
-                        $('#card_due_date').val(formattedDate);
-                    } else {
-                        $('#card_due_date').val('');
+                        $('#card_due_date').val(dueDate.toISOString().slice(0, 16));
                     }
 
-                    $('#card_is_due_checked').prop('checked', response.data.is_due_checked || false);
-
-                    // Handle image preview
-                    const imagePreviewContainer = $('#card_image_preview_container');
-                    const imagePreview = $('#card_image_preview');
+                    $('#card_is_due_checked').prop('checked', response.data.is_due_checked);
 
                     if (response.data.img) {
-                        imagePreview.attr('src', `/storage/images/cards/${response.data.img}`);
-                        imagePreviewContainer.removeClass('hidden');
-                    } else {
-                        imagePreview.attr('src', '');
-                        imagePreviewContainer.addClass('hidden');
+                        $('#card_image_preview').attr('src',
+                            `/storage/images/cards/${response.data.img}`);
+                        $('#card_image_preview_container').removeClass('hidden');
                     }
 
                     $('#modalDetailCard').removeClass('hidden');
                 },
-                error: function(xhr, status, error) {
-                    console.error("Error saat melakukan request:", error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to load card details',
-                    });
+                error: function(xhr) {
+                    console.error("Error:", xhr);
                 }
             });
         });

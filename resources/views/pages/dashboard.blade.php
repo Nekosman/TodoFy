@@ -43,8 +43,12 @@
                         class="block w-60 bg-gray-900 text-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition">
                         <a href="{{ route('projects.show', $session->id) }}" class="block">
                             <div class="h-40 overflow-hidden">
-                                <img src="{{ asset($session->img) }}" alt="Session Image"
-                                    class="w-full h-full object-cover">
+                                 @if (!empty($session->img) && file_exists(public_path($session->img)))
+                                    <img src="{{ asset($session->img) }}"
+                                        class="w-full h-full object-cover" alt="Card Image">
+                                @endif
+                                {{-- <img src="{{ asset($session->img) }}" alt="Session Image"
+                                    class="w-full h-full object-cover"> --}}
                             </div>
                         </a>
                         <div class="p-3 bg-gray-200 text-black font-semibold flex justify-between">
