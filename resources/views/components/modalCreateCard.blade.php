@@ -1,4 +1,4 @@
-<div id="modalCreateCard" class="fixed inset-0 flex items-center justify-center p-4 z-50 hidden">
+<div id="modalCreateCard" class="fixed inset-0 flex items-center justify-center p-4 z-50 ">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-md relative z-50">
         <!-- Modal Header -->
         <div class="flex justify-between items-center p-4 border-b">
@@ -70,8 +70,8 @@
     </div>
 </div>
 
-@push('scripts')
     <script>
+
         // Event untuk membuka modal create card
         $('body').on('click', '#btn-add-card', function() {
             const parentId = $(this).closest('.parent-list-item').data('parent-id');
@@ -85,74 +85,74 @@
         });
 
         // Event untuk submit form create card
-        $('#submitCreateCard').click(function() {
-            const formData = new FormData($('#createCardForm')[0]);
+        // $('#submitCreateCard').click(function() {
+        //     const formData = new FormData($('#createCardForm')[0]);
 
-            $.ajax({
-                url: '/cards/create',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: response.message,
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
+        //     $.ajax({
+        //         url: '/cards/create',
+        //         type: 'POST',
+        //         data: formData,
+        //         processData: false,
+        //         contentType: false,
+        //         headers: {
+        //             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        //         },
+        //         success: function(response) {
+        //             if (response.success) {
+        //                 Swal.fire({
+        //                     icon: 'success',
+        //                     title: 'Success',
+        //                     text: response.message,
+        //                     showConfirmButton: false,
+        //                     timer: 1500
+        //                 });
 
-                        // Langsung buat HTML card baru
-                        const card = response.card;
-                        const parentList = $(`.parent-list-item[data-parent-id="${card.parent_id}"]`);
+        //                 // Langsung buat HTML card baru
+        //                 const card = response.card;
+        //                 const parentList = $(`.parent-list-item[data-parent-id="${card.parent_id}"]`);
 
-                        if (parentList.length) {
-                            const cardHtml = `
-                            <div class="bg-gray-700 p-3 rounded-md mb-2 card-item">
-                                <div class="flex justify-between items-start">
-                                    <div class="flex items-center gap-2">
-                                        <h3 class="font-medium">${card.title}</h3>
-                                        ${statusBadgeHtml(card.is_due_checked)}
-                                    </div>
-                                    <button class="text-gray-400 hover:text-white btn-detail-card" 
-                                            data-id="${card.id}">
-                                        <i class="fas fa-info-circle"></i>
-                                    </button>
-                                </div>
-                                ${card.description ? `<p class="text-sm text-gray-300 mt-1">${card.description}</p>` : ''}
-                                <div class="flex justify-between items-center mt-1">
-                                    <p class="text-xs text-gray-400">Due: ${card.due_date || ''}</p>
-                                    <p class="text-xs ${card.is_due_checked ? 'text-green-300' : 'text-yellow-300'}">
-                                        ${card.is_due_checked ? 'Completed' : 'Pending'}
-                                    </p>
-                                </div>
-                                ${card.img ? `<img src="/storage/images/cards/${card.img}" class="mt-2 rounded-md max-h-20">` : ''}
-                            </div>
-                        `;
+        //                 if (parentList.length) {
+        //                     const cardHtml = `
+        //                     <div class="bg-gray-700 p-3 rounded-md mb-2 card-item">
+        //                         <div class="flex justify-between items-start">
+        //                             <div class="flex items-center gap-2">
+        //                                 <h3 class="font-medium">${card.title}</h3>
+        //                                 ${statusBadgeHtml(card.is_due_checked)}
+        //                             </div>
+        //                             <button class="text-gray-400 hover:text-white btn-detail-card" 
+        //                                     data-id="${card.id}">
+        //                                 <i class="fas fa-info-circle"></i>
+        //                             </button>
+        //                         </div>
+        //                         ${card.description ? `<p class="text-sm text-gray-300 mt-1">${card.description}</p>` : ''}
+        //                         <div class="flex justify-between items-center mt-1">
+        //                             <p class="text-xs text-gray-400">Due: ${card.due_date || ''}</p>
+        //                             <p class="text-xs ${card.is_due_checked ? 'text-green-300' : 'text-yellow-300'}">
+        //                                 ${card.is_due_checked ? 'Completed' : 'Pending'}
+        //                             </p>
+        //                         </div>
+        //                         ${card.img ? `<img src="/storage/images/cards/${card.img}" class="mt-2 rounded-md max-h-20">` : ''}
+        //                     </div>
+        //                 `;
 
-                            parentList.find('.space-y-3').prepend(cardHtml);
-                        }
+        //                     parentList.find('.space-y-3').prepend(cardHtml);
+        //                 }
 
-                        // Reset form
-                        $('#createCardForm')[0].reset();
-                        $('#modalCreateCard').addClass('hidden');
-                    }
-                },
-                error: function(xhr) {
-                    let errorMessage = xhr.responseJSON?.message || 'Failed to create card';
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: errorMessage,
-                    });
-                }
-            });
-        });
+        //                 // Reset form
+        //                 $('#createCardForm')[0].reset();
+        //                 $('#modalCreateCard').addClass('hidden');
+        //             }
+        //         },
+        //         error: function(xhr) {
+        //             let errorMessage = xhr.responseJSON?.message || 'Failed to create card';
+        //             Swal.fire({
+        //                 icon: 'error',
+        //                 title: 'Error',
+        //                 text: errorMessage,
+        //             });
+        //         }
+        //     });
+        // });
 
 
         function statusBadgeHtml(isChecked) {
@@ -167,4 +167,3 @@
             $('#card-file-name').text(fileName || 'No file chosen');
         });
     </script>
-@endpush

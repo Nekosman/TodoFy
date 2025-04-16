@@ -1,4 +1,4 @@
-<div id="modalDetailParent" class="fixed inset-0 flex items-center justify-center p-4 z-50 hidden">
+<div id="modalDetailParent" class="fixed inset-0 flex items-center justify-center p-4 z-50 ">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-md relative z-50">
         <!-- Modal Header -->
         <div class="flex justify-between items-center p-4 border-b">
@@ -31,7 +31,7 @@
             <!-- Tombol Delete -->
             <button
                 class="btn-delete-parent flex items-center justify-center p-2 text-red-500 hover:text-red-700 transition-colors cursor-pointer"
-                title="Delete Parent List" data-id="{{ $list->id }}"> <!-- Tambahkan data-id disini -->
+                title="Delete Parent List">
                 <i class="fas fa-trash"></i>
             </button>
 
@@ -50,133 +50,148 @@
 </style> --}}
 
 
-@push('scripts')
-    <script>
-        // Event untuk membuka modal detail
-        $(document).on('click', '#btn-detail-parent', function() {
-            let ListParent_id = $(this).data('id');
-            console.log("Klik Detail Parent, ID:", ListParent_id); // Debugging
 
-            $.ajax({
-                url: `/parent-lists/detail/${ListParent_id}`,
-                type: "GET",
-                cache: false,
-                success: function(response) {
-                    console.log("Response dari server:", response);
+<script>
+    let modalLoaded = false;
 
-                    if (!response || !response.data) {
-                        console.error("Data tidak ditemukan dalam response:", response);
-                        return;
-                    }
+    // Event untuk membuka modal detail
+    $(document).on('click', '#btn-detail-parent', function() {
+        const ListParent_id = $(this).data('id');
+        console.log("Klik Detail Parent, ID:", ListParent_id);
 
-                    // Isi form dengan data dari response
-                    $('#ParentList_id').val(response.data.id);
-                    $('#ParentList_title').val(response.data.title);
-
-                    // Tampilkan modal setelah data berhasil diambil
-                    $('#modalDetailParent').removeClass('hidden');
-                },
-                error: function(xhr, status, error) {
-                    console.error("Error saat melakukan request:", error);
-                }
+        if (!modalLoaded) {
+            // Load modal via AJAX pertama kali
+            $.get('/modal/parent-detail', function(html) {
+                $('body').append(html);
+                modalLoaded = true;
+                showParentModal(ListParent_id);
             });
-        });
+        } else {
+            showParentModal(ListParent_id);
+        }
+    });
 
 
-        // Event untuk menutup modal detail
-        $('#closeModalDetailParent').click(function() {
-            $('#modalDetailParent').addClass('hidden');
-        });
+    // function showParentModal(ListParent_id) {
+    //     $.ajax({
+    //         url: `/parent-lists/detail/${ListParent_id}`,
+    //         type: "GET",
+    //         cache: false,
+    //         success: function(response) {
+    //             console.log("Response dari server:", response);
 
-        // Event untuk melakukan update data
-        $('#updateTodoForm').on('submit', function(e) {
-            e.preventDefault();
+    //             if (!response || !response.data) {
+    //                 console.error("Data tidak ditemukan dalam response:", response);
+    //                 return;
+    //             }
 
-            let id = $('#ParentList_id').val();
-            let title = $('#title').val();
-            let formData = new FormData(this);
+    //             // Isi form dengan data dari response
+    //             $('#ParentList_id').val(response.data.id);
+    //             $('#ParentList_title').val(response.data.title);
 
-            $.ajax({
-                url: `/parent-lists/update/${id}`,
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
-                    'X-HTTP-Method-Override': 'PUT'
-                },
-                success: function(response) {
-                    if (response.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: response.message,
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
+    //             // Tampilkan modal setelah data berhasil diambil
+    //             $('#modalDetailParent').removeClass('hidden');
+    //         },
+    //         error: function(xhr, status, error) {
+    //             console.error("Error saat melakukan request:", error);
+    //         }
+    //     });
+    // }
 
-                        // Update the UI without reload - perbaikan selector
-                        $(`.parent-list-item[data-parent-id="${id}"] .parent-title`).text(title);
-                        $('#modalDetailParent').addClass('hidden');
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: response.message || "Failed to update parent list.",
-                        });
-                    }
-                },
-                error: function(xhr) {
+
+    // Event untuk menutup modal detail
+    $(document).on('click', '#closeModalDetailParent', function() {
+        $('#modalDetailParent').addClass('hidden');
+    });
+
+    // Event untuk melakukan update data
+    $('#updateTodoForm').on('submit', function(e) {
+        e.preventDefault();
+
+        let id = $('#ParentList_id').val();
+        let title = $('#title').val();
+        let formData = new FormData(this);
+
+        $.ajax({
+            url: `/parent-lists/update/${id}`,
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'X-HTTP-Method-Override': 'PUT'
+            },
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+
+                    const updatedTitle = $('#ParentList_title').val();
+                    $(`.parent-list-item[data-parent-id="${id}"] .parent-title`).text(updatedTitle);
+
+                    $('#modalDetailParent').addClass('hidden');
+                } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: xhr.responseJSON?.message ||
-                            "Terjadi kesalahan saat memperbarui data.",
+                        text: response.message || "Failed to update parent list.",
                     });
                 }
-            });
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.message ||
+                        "Terjadi kesalahan saat memperbarui data.",
+                });
+            }
         });
+    });
 
-        $('body').on('click', '.btn-delete-parent', function() {
-            let parentId = $('#ParentList_id').val(); // Ambil ID dari input hidden
+    $('body').on('click', '.btn-delete-parent', function() {
+        let parentId = $('#ParentList_id').val(); // Ambil ID dari input hidden
 
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: `/parent-lists/delete/${parentId}`, // Sesuaikan dengan route
-                        type: "DELETE",
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        },
-                        success: function(response) {
-                            Swal.fire(
-                                'Deleted!',
-                                response.message,
-                                'success'
-                            ).then(() => {
-                                // Refresh halaman atau update UI
-                                window.location.reload();
-                            });
-                        },
-                        error: function(xhr) {
-                            Swal.fire(
-                                'Error!',
-                                xhr.responseJSON?.message || 'Failed to delete parent list',
-                                'error'
-                            );
-                        }
-                    });
-                }
-            });
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/parent-lists/delete/${parentId}`,
+                    type: "DELETE",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        Swal.fire(
+                            'Deleted!',
+                            response.message,
+                            'success'
+                        ).then(() => {
+                            window.location.reload();
+                        });
+                    },
+                    error: function(xhr) {
+                        Swal.fire(
+                            'Error!',
+                            xhr.responseJSON?.message || 'Failed to delete parent list',
+                            'error'
+                        );
+                    }
+                });
+            }
         });
-    </script>
-@endpush
+    });
+</script>

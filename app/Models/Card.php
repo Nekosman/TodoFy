@@ -16,6 +16,13 @@ class Card extends Model
         'is_due_checked',
         'img',
         'parent_id',
+        'completed_at'
+    ];
+
+    protected $casts = [
+        'is_due_checked' => 'boolean',
+        'due_date' => 'datetime',
+        'completed_at' => 'datetime'
     ];
 
     public function parentList()
@@ -27,4 +34,16 @@ class Card extends Model
     {
         return $this->hasMany(Checklist::class, 'card_id');
     }
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::updating(function($card) {
+            if ($card->isDirty('is_due_checked') && $card->is_due_checked) {
+                $card->completed_at = now();
+            }
+        });
+    }
+
 }

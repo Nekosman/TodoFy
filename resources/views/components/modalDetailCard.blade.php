@@ -1,4 +1,4 @@
-<div id="modalDetailCard" class="fixed inset-0 flex items-center justify-center p-4 z-50 hidden">
+<div id="modalDetailCard" class="fixed inset-0 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-md relative z-50">
         <!-- Modal Header -->
         <div class="flex justify-between items-center p-4 border-b">
@@ -80,42 +80,41 @@
     </div>
 </div>
 
-@push('scripts')
     <script>
         // Event untuk membuka modal detail card (gunakan event delegation)
-        $(document).on('click', '.btn-detail-card', function() {
-            let cardId = $(this).data('id');
-            console.log("Detail card clicked:", cardId);
+        // $(document).on('click', '.btn-detail-card', function() {
+        //     let cardId = $(this).data('id');
+        //     console.log("Detail card clicked:", cardId);
 
-            $.ajax({
-                url: `/cards/${cardId}`,
-                type: "GET",
-                success: function(response) {
-                    // Isi form dengan data response
-                    $('#card_id').val(response.data.id);
-                    $('#card_title').val(response.data.title);
-                    $('#card_description').val(response.data.description);
+        //     $.ajax({
+        //         url: `/cards/${cardId}`,
+        //         type: "GET",
+        //         success: function(response) {
+        //             // Isi form dengan data response
+        //             $('#card_id').val(response.data.id);
+        //             $('#card_title').val(response.data.title);
+        //             $('#card_description').val(response.data.description);
 
-                    if (response.data.due_date) {
-                        const dueDate = new Date(response.data.due_date);
-                        $('#card_due_date').val(dueDate.toISOString().slice(0, 16));
-                    }
+        //             if (response.data.due_date) {
+        //                 const dueDate = new Date(response.data.due_date);
+        //                 $('#card_due_date').val(dueDate.toISOString().slice(0, 16));
+        //             }
 
-                    $('#card_is_due_checked').prop('checked', response.data.is_due_checked);
+        //             $('#card_is_due_checked').prop('checked', response.data.is_due_checked);
 
-                    if (response.data.img) {
-                        $('#card_image_preview').attr('src',
-                            `/storage/images/cards/${response.data.img}`);
-                        $('#card_image_preview_container').removeClass('hidden');
-                    }
+        //             if (response.data.img) {
+        //                 $('#card_image_preview').attr('src',
+        //                     `/storage/images/cards/${response.data.img}`);
+        //                 $('#card_image_preview_container').removeClass('hidden');
+        //             }
 
-                    $('#modalDetailCard').removeClass('hidden');
-                },
-                error: function(xhr) {
-                    console.error("Error:", xhr);
-                }
-            });
-        });
+        //             $('#modalDetailCard').removeClass('hidden');
+        //         },
+        //         error: function(xhr) {
+        //             console.error("Error:", xhr);
+        //         }
+        //     });
+        // });
         // Event untuk menutup modal detail card
         $('#closeModalDetailCard').click(function() {
             $('#modalDetailCard').addClass('hidden');
@@ -211,4 +210,3 @@
             });
         });
     </script>
-@endpush

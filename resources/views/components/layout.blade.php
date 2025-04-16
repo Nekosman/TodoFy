@@ -3,15 +3,16 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>@yield('title')</title>
+<title>TODOFY |  @yield('title')</title>
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
 @vite('resources/css/app.css')
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-@stack('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script defer src="{{ asset('js/sidebar.js') }}"></script> <!-- Tambahkan script JS -->
+@stack('css')
+    
 <style>
     .transition-all {
         transition: all 0.3s;
@@ -77,11 +78,15 @@
                     </a>
                 </li>
 
-                <!-- Setting -->
+                <a href="{{ route('setting.index') }}">
+                    <!-- Setting -->
                 <li class=" flex items-center p-3 cursor-pointer hover:bg-orange-500 rounded-lg transition">
                     <i class="fas fa-cog text-white w-6 text-lg"></i>
                     <span class="sidebar-text text-white duration-300 ml-3 text-lg">Setting</span>
                 </li>
+                </a>
+                
+                
                 <li class="flex items-center p-3 cursor-pointer hover:bg-orange-500 rounded-lg transition"
                     id="openLogout">
                     <a href="#" class="flex items-center">
@@ -104,7 +109,7 @@
 @include('components.modalCreateProject')
 @include('components.modalLogout')
 
-
+@stack('scripts')
 <script>
     // Fungsi untuk menampilkan atau menyembunyikan modal
     function toggleModal(modalId, show) {

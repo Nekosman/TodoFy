@@ -77,6 +77,12 @@
                         class="mt-5 w-full bg-orange-400 text-white p-3 rounded-lg font-bold hover:bg-orange-500 transition">
                         Enter Here
                     </button>
+
+                    <div class="mt-5">
+                        <a href="{{ route('auth.google.redirect') }}" class="block w-full bg-orange-400 text-white p-3 rounded-lg font-bold hover:bg-orange-500 transition text-center">
+                            LOGIN WITH GOOGLE
+                        </a>
+                    </div>
                 </form>
 
                 <!-- Forgot Password -->

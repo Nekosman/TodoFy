@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TodoController;
 use App\Http\Middleware\IsGuest;
 use App\Http\Middleware\IsLogin;
@@ -35,11 +36,20 @@ Route::middleware(IsLogin::class)->group(function () {
 
     Route::post('/parent-lists', [TodoController::class, 'storeParent'])->name('parent-lists.store');
     Route::get('/parent-lists/detail/{ParentList}', [TodoController::class, 'detailParent'])->name('parent-lists.detail');
+    Route::get('/modal/parent-detail', function() {
+        return view('components.modalDetailParent');
+    })->name('modal.parent_detail');
     Route::put('/parent-lists/update/{ParentList}', [TodoController::class, 'updateParent'])->name('parent-lists.update');
     Route::delete('/parent-lists/delete/{ParentList}', [TodoController::class, 'deleteParent'])->name('parent-lists.delete');
 
     Route::post('/cards/create', [TodoController::class, 'storeCard'])->name('cards.store');
+    Route::get('/modal/card-create-show', function () {
+        return view('components.modalCreateCard');
+    })->name('modal.createcard');
     Route::get('/cards/{card}', [TodoController::class, 'showCard'])->name('cards.show');
+    Route::get('/modal/card-detail-show', function () {
+        return view('components.modalDetailCard');
+    })->name('modal.detailcard');
     Route::put('/cards/update/{card}', [TodoController::class, 'updateCard'])->name('cards.update');
     Route::delete('/cards/delete/{card}', [TodoController::class, 'deleteCard'])->name('cards.delete');
 
@@ -51,5 +61,7 @@ Route::middleware(IsLogin::class)->group(function () {
     Route::put('/project/{TodoSession}/update', [TodoController::class, 'updateSession'])->name('project.update');
     Route::delete('/project/{session}/delete', [TodoController::class, 'deleteSession'])->name('project.delete');
 
-    Route::get('/parent-lists/load-more', [TodoController::class, 'loadMore']);
+    Route::get('/settings', [SettingController::class, 'index'])->name('setting.index');
+    Route::put('/settings/updateProfile', [SettingController::class, 'updateProfile'])->name('settings.profile.update');
+    Route::put('/settings/updatePassword', [SettingController::class, 'updateSecurity'])->name('settings.security.update');
 });
