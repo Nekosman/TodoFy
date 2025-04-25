@@ -13,7 +13,6 @@ class TodoSession extends Model
         'img',
         'title',
         'description',
-        'visibility',
         'user_id'
     ];
 

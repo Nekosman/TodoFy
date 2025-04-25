@@ -13,13 +13,8 @@ class SettingController extends Controller
     public function index()
     {
         $user = Auth::user();
-         $completedActivities = Card::with(['parentList.todoSession'])
-            ->whereNotNull('completed_at')
-            ->orderBy('completed_at', 'desc')
-            ->paginate(10);
 
-
-        return view('pages.setting', compact('user', 'completedActivities'));
+        return view('pages.setting', compact('user'));
     }
 
     public function updateProfile(Request $request)
@@ -41,10 +36,10 @@ class SettingController extends Controller
             // Handle profile image
             if ($request->hasFile('profile_image')) {
                 // Delete old image if exists
-                if ($user->profile_image) {
-                    $oldImage = str_replace('/storage/', 'public/', $user->profile_image);
-                    Storage::delete($oldImage);
-                }
+                // if ($user->profile_image) {
+                //     $oldImage = str_replace('/storage/', 'public/', $user->profile_image);
+                //     Storage::delete($oldImage);
+                // }
 
                 // Store new image
                 $imagePath = $request->file('profile_image')->store('public/profile_images');
@@ -61,7 +56,6 @@ class SettingController extends Controller
             return back()->with('error', 'Error updating profile: ' . $e->getMessage());
         }
     }
-
 
     public function updateSecurity(Request $request)
     {
@@ -84,6 +78,4 @@ class SettingController extends Controller
         // Redirect back with a success message
         return back()->with('success', 'Password updated successfully!');
     }
-
-      
 }

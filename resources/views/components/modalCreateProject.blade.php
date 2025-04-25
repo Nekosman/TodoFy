@@ -25,15 +25,7 @@
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                         name="description"></textarea>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Visibility</label>
-                    <select name="visibility"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <option value="public">Public</option>
-                        <option value="private">Private</option>
-                    </select>
-
-                </div>
+                
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Choose Image</label>

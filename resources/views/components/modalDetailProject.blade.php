@@ -1,4 +1,4 @@
-<div id="modalDetailTodo" class="fixed inset-0 flex items-center justify-center p-4 z-50 hidden">
+<div id="modalDetailTodo" class="fixed inset-0 flex items-center justify-center p-4 z-50 hidden" style="display: none;">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-md relative z-50">
         <!-- Modal Header -->
         <div class="flex justify-between items-center p-4 border-b">
@@ -31,15 +31,7 @@
                         class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
                 </div>
 
-                <!-- Visibility -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Visibility</label>
-                    <select id="visibility" name="visibility"
-                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        <option value="public">Public</option>
-                        <option value="private">Private</option>
-                    </select>
-                </div>
+                
 
                 <!-- Image Upload -->
                 <div class="mb-6"> <!-- Tambahkan margin bottom di sini -->
@@ -115,7 +107,6 @@
                     $('#TodoSession_id').val(response.data.id);
                     $('#title').val(response.data.title);
                     $('#description').val(response.data.description);
-                    $('#visibility').val(response.data.visibility);
 
                     // Tampilkan gambar saat ini jika ada
                     if (response.data.img) {
@@ -125,7 +116,7 @@
                         $('#current-image').addClass('hidden');
                     }
 
-                    $('#modalDetailTodo').removeClass('hidden');
+                    $('#modalDetailTodo').removeClass('hidden').css('display', 'flex');
                 },
                 error: function(xhr, status, error) {
                     console.error("Error saat melakukan request:", error);
@@ -135,7 +126,7 @@
 
         // Event untuk menutup modal detail
         $('#closeModalDetailTodo').click(function() {
-            $('#modalDetailTodo').addClass('hidden');
+            $('#modalDetailTodo').addClass('hidden').removeAttr('style');;
         });
 
         // Event untuk submit form update

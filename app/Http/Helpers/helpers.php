@@ -1,34 +1,73 @@
 <?php
 
 /**
- * Convert boolean is_due_checked status to readable text
- * 
- * @param bool|null $isChecked
- * @param string $doneText
- * @param string $dueText
- * @return string
+ * Get status text based on card status
  */
-function status_text($isChecked, $doneText = 'Done', $dueText = 'Due')
+function status_text($status, $doneText = 'Completed', $dueText = 'Pending', $lateText = 'Late')
 {
-    if ($isChecked === null) {
-        return $dueText; // Default jika null dianggap Due
-    }
-    
-    return $isChecked ? $doneText : $dueText;
+    return match($status) {
+        'completed' => $doneText,
+        'late' => $lateText,
+        default => $dueText,
+    };
 }
 
 /**
- * Get badge HTML based on is_due_checked status
- * 
- * @param bool|null $isChecked
- * @param string $doneClass
- * @param string $dueClass
- * @return string
+ * Get badge HTML based on card status
  */
-function status_badge($isChecked, $doneClass = 'bg-green-100 text-green-800', $dueClass = 'bg-red-100 text-red-800')
+function status_badge($status, $doneClass = 'bg-green-500 text-white', $dueClass = 'bg-yellow-500 text-white', $lateClass = 'bg-red-500 text-white')
 {
-    $status = status_text($isChecked);
-    $class = $isChecked ? $doneClass : $dueClass;
+    $class = match($status) {
+        'completed' => $doneClass,
+        'late' => $lateClass,
+        default => $dueClass,
+    };
     
-    return '<span class="px-2 py-1 rounded-full text-xs font-medium '.$class.'">'.$status.'</span>';
+    return '<span class="px-2 py-1 rounded-full text-xs font-medium '.$class.'">'.status_text($status).'</span>';
+}
+
+function format_date($date, $format = 'Y-m-d H:i', $fallback = '')
+{
+    if (empty($date)) {
+        return $fallback;
+    }
+
+    try {
+        if (!$date instanceof DateTime) {
+            $date = new DateTime($date);
+        }
+        return $date->format($format);
+    } catch (Exception $e) {
+        return $fallback;
+    }
+}
+
+function human_date($date, $fallback = '')
+{
+    if (empty($date)) {
+        return $fallback;
+    }
+
+    try {
+        if (!$date instanceof DateTime) {
+            $date = new DateTime($date);
+        }
+        
+        $now = new DateTime();
+        $diff = $now->diff($date);
+        
+        if ($diff->days === 0) {
+            return 'Today at ' . $date->format('H:i');
+        } elseif ($diff->days === 1 && $date > $now) {
+            return 'Tomorrow at ' . $date->format('H:i');
+        } elseif ($diff->days === 1 && $date < $now) {
+            return 'Yesterday at ' . $date->format('H:i');
+        } elseif ($diff->days < 7) {
+            return $date->format('l \\a\\t H:i');
+        } else {
+            return $date->format('M j, Y \\a\\t H:i');
+        }
+    } catch (Exception $e) {
+        return $fallback;
+    }
 }

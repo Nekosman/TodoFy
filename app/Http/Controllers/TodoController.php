@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Card;
-use App\Models\CheckList;
 use DB;
 use App\Models\ParentList;
 use App\Models\TodoSession;
@@ -16,19 +15,42 @@ class TodoController extends Controller
     /**
      * Menampilkan semua session milik user
      */
-    public function index()
+    public function index(Request $request)
     {
-        $sessions = TodoSession::where('user_id', auth()->id())->get();
-        return view('pages.dashboard', compact('sessions'));
+        $completedActivities = Card::whereNotNull('completed_at')
+            ->select('cards.*')
+            ->join('parent_lists', 'cards.parent_id', '=', 'parent_lists.id')
+            ->join('todo_sessions', 'parent_lists.session_id', '=', 'todo_sessions.id')
+            ->where('todo_sessions.user_id', auth()->id())
+            ->orderBy('completed_at', 'desc')
+            ->paginate(3, ['*'], 'activities_page'); // Parameter khusus activities
+
+        $sessions = TodoSession::where('user_id', auth()->id())->paginate(5, ['*'], 'sessions_page');
+
+        $todayDueCards = Card::select('cards.*')
+            ->join('parent_lists', 'cards.parent_id', '=', 'parent_lists.id')
+            ->join('todo_sessions', 'parent_lists.session_id', '=', 'todo_sessions.id')
+            ->where('todo_sessions.user_id', auth()->id())
+            ->whereDate('cards.due_date', today())
+            ->with(['parentList.todoSession'])
+            ->orderBy('cards.due_date')
+            ->get();
+
+        return view('pages.dashboard', compact('sessions', 'completedActivities', 'todayDueCards'));
     }
 
-    //session function
+    /**
+     *
+     *
+     * Session Function
+     *
+     *
+     */
     public function storeSession(Request $request)
     {
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:255',
-            'visibility' => 'required|in:private,public',
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
@@ -46,7 +68,6 @@ class TodoController extends Controller
                 'title' => $request->title,
                 'description' => $request->description,
                 'img' => $imageName ? 'storage/images/' . $imageName : null, // Jika tidak ada gambar, tetap null
-                'visibility' => $request->visibility,
             ]);
 
             // Buat parent list default
@@ -65,10 +86,27 @@ class TodoController extends Controller
         });
     }
 
-    public function show($id)
+    public function show($id, Request $request)
     {
-        $todoSession = TodoSession::with('parentLists')->findOrFail($id);
-        return view('pages.projectSession', compact('todoSession'));
+        $filter = $request->query('filter', 'all');
+
+        $todoSession = TodoSession::with([
+            'parentLists.cards' => function ($query) use ($filter) {
+                if (in_array($filter, ['due', 'completed', 'late'])) {
+                    $query->where('status', $filter);
+                }
+            },
+        ])->findOrFail($id);
+
+        // // Hapus parentLists yang tidak memiliki cards setelah difilter
+        // $todoSession->parentLists = $todoSession->parentLists->filter(function ($parentList) {
+        //     return $parentList->cards->isNotEmpty();
+        // });
+
+        return view('pages.projectSession', [
+            'todoSession' => $todoSession,
+            'id' => $id,
+        ]);
     }
 
     public function detail(TodoSession $TodoSession)
@@ -81,7 +119,6 @@ class TodoController extends Controller
                 'title' => $TodoSession->title,
                 'img' => $TodoSession->img,
                 'description' => $TodoSession->description,
-                'visibility' => $TodoSession->visibility,
             ],
         ]);
     }
@@ -91,7 +128,6 @@ class TodoController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:255',
-            'visibility' => 'required|in:private,public',
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
@@ -156,7 +192,13 @@ class TodoController extends Controller
         return response()->json(['message' => 'Session and all related data deleted successfully']);
     }
 
-    //parent function
+    /**
+     *
+     *
+     * Parent Function
+     *
+     *
+     */
     public function storeParent(Request $request)
     {
         $request->validate([
@@ -255,7 +297,14 @@ class TodoController extends Controller
         }
     }
 
-    //card function
+    /**
+     *
+     *
+     * Cards Function
+     *
+     *
+     *
+     */
     public function storeCard(Request $request)
     {
         try {
@@ -268,19 +317,34 @@ class TodoController extends Controller
             ]);
 
             return DB::transaction(function () use ($request, $validated) {
-                // Tambahkan $validated di sini
                 if ($request->hasFile('img')) {
                     $imageName = time() . '.' . $request->img->extension();
                     $request->img->move(public_path('storage/images/cards'), $imageName);
-                    $validated['img'] = $imageName; // Tambahkan nama gambar ke data yang divalidasi
+                    $validated['img'] = $imageName;
                 }
 
                 $card = Card::create($validated);
+                $card->load('parentList.todoSession');
+
+                // Pastikan status sudah sesuai setelah create
+                $card->checkAndUpdateStatus();
+                $card->save();
 
                 return response()->json([
                     'success' => true,
                     'message' => 'Card created successfully',
-                    'card' => $card,
+                    'card' => [
+                        'id' => $card->id,
+                        'title' => $card->title,
+                        'description' => $card->description,
+                        'due_date' => $card->due_date,
+                        'format_date' => format_date($card->due_date),
+                        'status' => $card->status,
+                        'img' => $card->img,
+                        'parent_id' => $card->parent_id,
+                        'status_text' => status_text($card->status),
+                        'status_badge' => status_badge($card->status),
+                    ],
                 ]);
             });
         } catch (\Exception $e) {
@@ -324,18 +388,17 @@ class TodoController extends Controller
             return DB::transaction(function () use ($request, $validated, $id) {
                 $card = Card::findOrFail($id);
 
-                // Tambahkan $validated di sini
                 if ($request->hasFile('img')) {
                     $imageName = time() . '.' . $request->img->extension();
                     $request->img->move(public_path('storage/images/cards'), $imageName);
-                    $validated['img'] = $imageName; // Tambahkan nama gambar ke data yang divalidasi
+                    $validated['img'] = $imageName;
                 }
 
                 $card->update($validated);
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'Card created successfully',
+                    'message' => 'Card updated successfully',
                     'card' => $card->fresh(),
                 ]);
             });
@@ -343,7 +406,7 @@ class TodoController extends Controller
             return response()->json(
                 [
                     'success' => false,
-                    'message' => 'Failed to create card: ' . $e->getMessage(),
+                    'message' => 'Failed to update card: ' . $e->getMessage(),
                 ],
                 500,
             );
@@ -387,6 +450,45 @@ class TodoController extends Controller
                 [
                     'success' => false,
                     'message' => 'Error deleting parent list: ' . $e->getMessage(),
+                ],
+                500,
+            );
+        }
+    }
+
+    public function moveCard(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'new_parent_id' => 'required|exists:parent_lists,id',
+            ]);
+
+            $card = Card::find($id);
+
+            // Validasi card exists
+            if (!$card) {
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'Card not found',
+                    ],
+                    404,
+                );
+            }
+
+            $oldParentId = $card->parent_id;
+            $card->update(['parent_id' => $request->new_parent_id]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Card moved successfully',
+                'card' => $card->fresh(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Error moving card: ' . $e->getMessage(),
                 ],
                 500,
             );

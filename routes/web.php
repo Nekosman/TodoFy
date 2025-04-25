@@ -2,12 +2,17 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\FilterController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TodoController;
 use App\Http\Middleware\IsGuest;
 use App\Http\Middleware\IsLogin;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/', [HomeController::class, 'index']);
 
 Route::middleware(IsGuest::class)->group(function () {
     Route::get('login', [AuthController::class, 'index'])->name('login');
@@ -36,7 +41,7 @@ Route::middleware(IsLogin::class)->group(function () {
 
     Route::post('/parent-lists', [TodoController::class, 'storeParent'])->name('parent-lists.store');
     Route::get('/parent-lists/detail/{ParentList}', [TodoController::class, 'detailParent'])->name('parent-lists.detail');
-    Route::get('/modal/parent-detail', function() {
+    Route::get('/modal/parent-detail', function () {
         return view('components.modalDetailParent');
     })->name('modal.parent_detail');
     Route::put('/parent-lists/update/{ParentList}', [TodoController::class, 'updateParent'])->name('parent-lists.update');
@@ -52,6 +57,7 @@ Route::middleware(IsLogin::class)->group(function () {
     })->name('modal.detailcard');
     Route::put('/cards/update/{card}', [TodoController::class, 'updateCard'])->name('cards.update');
     Route::delete('/cards/delete/{card}', [TodoController::class, 'deleteCard'])->name('cards.delete');
+    Route::put('/cards/{id}/move', [TodoController::class, 'moveCard'])->name('card.movecard');
 
     Route::post('/checklists/{cardId}', [TodoController::class, 'storeChecklist']);
     Route::patch('/checklists/{checklist}', [TodoController::class, 'updateChecklist']);
@@ -64,4 +70,7 @@ Route::middleware(IsLogin::class)->group(function () {
     Route::get('/settings', [SettingController::class, 'index'])->name('setting.index');
     Route::put('/settings/updateProfile', [SettingController::class, 'updateProfile'])->name('settings.profile.update');
     Route::put('/settings/updatePassword', [SettingController::class, 'updateSecurity'])->name('settings.security.update');
+
+    // routes/web.php
+    Route::get('/cardslist', [FilterController::class, 'index'])->name('cards.index');
 });

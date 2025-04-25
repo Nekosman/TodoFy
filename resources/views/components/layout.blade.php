@@ -2,17 +2,22 @@
 <html lang="en">
 
 <meta charset="UTF-8">
+<link href="{{ asset('/images/iconLogo.png') }}" rel="icon">
+<link href="{{ asset('/images/iconLogo.png') }}" rel="apple-touch-icon">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TODOFY |  @yield('title')</title>
+<title>TODOFY | @yield('title')</title>
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
 <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@100..900&display=swap" rel="stylesheet">
 @vite('resources/css/app.css')
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css">
+<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
 <script defer src="{{ asset('js/sidebar.js') }}"></script> <!-- Tambahkan script JS -->
 @stack('css')
-    
+
 <style>
     .transition-all {
         transition: all 0.3s;
@@ -33,16 +38,28 @@
     .fa-flip-horizontal {
         transform: scaleX(-1);
     }
-</style>
-<style>
+
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1px solid #e2e8f0;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+    }
+
+    .dataTables_wrapper .dataTables_length select {
+        border: 1px solid #e2e8f0;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+    }
+
     body {
         font-family: 'League Spartan', sans-serif;
         background: #F8F9FA;
     }
 </style>
+
 </head>
 
-<body>
+<body class="h-screen">
     <div class="flex">
         <!-- Sidebar -->
         <div
@@ -68,7 +85,7 @@
                         <span class="sidebar-text text-white duration-300 ml-3 text-lg">Dashboard</span>
                     </li>
                 </a>
-              
+
                 <!-- Create -->
                 <li class="flex items-center p-3 cursor-pointer hover:bg-orange-500 rounded-lg transition"
                     id="openModalCreate">
@@ -78,15 +95,23 @@
                     </a>
                 </li>
 
+                <a href="{{ route('cards.index') }}">
+                    <!-- Setting -->
+                    <li class=" flex items-center p-3 cursor-pointer hover:bg-orange-500 rounded-lg transition">
+                        <i class="fas fa-clipboard-list text-white w-6 text-lg"></i>
+                        <span class="sidebar-text text-white duration-300 ml-3 text-lg">All Cards</span>
+                    </li>
+                </a>
+
                 <a href="{{ route('setting.index') }}">
                     <!-- Setting -->
-                <li class=" flex items-center p-3 cursor-pointer hover:bg-orange-500 rounded-lg transition">
-                    <i class="fas fa-cog text-white w-6 text-lg"></i>
-                    <span class="sidebar-text text-white duration-300 ml-3 text-lg">Setting</span>
-                </li>
+                    <li class=" flex items-center p-3 cursor-pointer hover:bg-orange-500 rounded-lg transition">
+                        <i class="fas fa-cog text-white w-6 text-lg"></i>
+                        <span class="sidebar-text text-white duration-300 ml-3 text-lg">Setting</span>
+                    </li>
                 </a>
-                
-                
+
+
                 <li class="flex items-center p-3 cursor-pointer hover:bg-orange-500 rounded-lg transition"
                     id="openLogout">
                     <a href="#" class="flex items-center">
@@ -99,7 +124,7 @@
         </div>
 
         <!-- Content -->
-        <div class="p-7">
+        <div class="p-7 ">
 
             @yield('contents')
         </div>
