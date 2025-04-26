@@ -3,7 +3,7 @@
 /**
  * Get status text based on card status
  */
-function status_text($status, $doneText = 'Completed', $dueText = 'Pending', $lateText = 'Late')
+function status_text($status, $doneText = 'Completed', $dueText = 'Due', $lateText = 'Late')
 {
     return match($status) {
         'completed' => $doneText,

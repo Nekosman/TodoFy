@@ -184,7 +184,9 @@
                                             </div>
                                         </div>
                                     </div>
+
                                 </div>
+
                             </a>
                         @empty
                             <div class="flex items-center justify-center">
@@ -192,6 +194,11 @@
                             </div>
                         @endforelse
                     </div>
+                    @if ($todayDueCards->hasPages())
+                        <div class="mt-4">
+                            {{ $todayDueCards->appends(['Due_Cards' => $sessions->currentPage()])->links() }}
+                        </div>
+                    @endif
                 </div>
             </div>
 

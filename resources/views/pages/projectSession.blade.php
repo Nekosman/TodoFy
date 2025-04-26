@@ -97,9 +97,10 @@
                                         {{ status_text($card->status) }}
                                     </p>
                                     <button
-                                        class="btn-move-card cursor-pointer hover:text-orange-400 transition duration-200"
+                                        class=" btn-move-card cursor-pointer hover:text-orange-400 transition duration-200"
                                         data-id="{{ $card->id }}">
-                                        Move
+                                        <i class="fas fa-exchange-alt"></i>
+                                        
                                     </button>
                                 </div>
                                 @if ($card->img && file_exists(public_path('storage/images/cards/' . $card->img)))
@@ -132,13 +133,10 @@
 
 @push('scripts')
     <script>
-        /*
-                        
-
-                        parent Function
+        /*                parent Function
 
 
-                        */
+                                    */
         $(document).ready(function() {
             $('#add-parent-list-button').click(function() {
                 const sessionId = $(this).data('session-id');

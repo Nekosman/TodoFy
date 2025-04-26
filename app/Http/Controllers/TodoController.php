@@ -34,7 +34,7 @@ class TodoController extends Controller
             ->whereDate('cards.due_date', today())
             ->with(['parentList.todoSession'])
             ->orderBy('cards.due_date')
-            ->get();
+            ->paginate(3, ['*'], 'Due_Cards');
 
         return view('pages.dashboard', compact('sessions', 'completedActivities', 'todayDueCards'));
     }
